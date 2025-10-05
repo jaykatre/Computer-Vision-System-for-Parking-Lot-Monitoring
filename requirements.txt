@@ -1,0 +1,6 @@
+ultralytics
+Flask
+# requests # No longer needed for local execution
+opencv-python
+numpy
+# On Jetson, ensure PyTorch/Torchvision are installed following NVIDIA's guidelines 

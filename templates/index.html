@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parking Lot Detection</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4a90e2; /* A nice blue */
+            --secondary-color: #f4f7f6; /* Light gray background */
+            --text-color: #333;
+            --border-color: #ddd;
+            --success-color: #28a745; /* Green for empty */
+            --danger-color: #dc3545;  /* Red for occupied */
+            --card-bg: #ffffff;
+            --shadow: 0 4px 8px rgba(0,0,0,0.1);
+            --border-radius: 8px;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            padding: 20px;
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+        .container {
+            background-color: var(--card-bg);
+            padding: 40px; /* Increased padding */
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            max-width: 850px; /* Slightly wider */
+            margin: 40px auto; /* More vertical margin */
+        }
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 30px; /* Increased spacing */
+            font-weight: 600;
+        }
+        h2 {
+            color: var(--text-color);
+            margin-top: 40px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            font-weight: 600;
+        }
+        h3 {
+            color: var(--text-color);
+            text-align: center;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        form {
+            margin-bottom: 40px;
+            text-align: center;
+            display: flex; /* Use flexbox for better alignment */
+            flex-direction: column;
+            align-items: center;
+            gap: 20px; /* Spacing between elements */
+        }
+
+        /* Style the file input label to look like a button */
+        .file-upload-label {
+            display: inline-block;
+            padding: 12px 25px;
+            background-color: #e9ecef;
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .file-upload-label:hover {
+            background-color: #dee2e6;
+        }
+        /* Hide the default file input */
+        input[type=file] {
+            display: none;
+        }
+        /* Show selected file name */
+        .file-name {
+            margin-top: 5px;
+            font-style: italic;
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+
+
+        input[type=submit] {
+            padding: 12px 30px; /* Slightly larger padding */
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: background-color 0.3s ease, transform 0.1s ease; /* Added transform */
+        }
+        input[type=submit]:hover {
+            background-color: #357abd; /* Darker blue on hover */
+        }
+        input[type=submit]:active {
+             transform: scale(0.98); /* Subtle press effect */
+        }
+
+        .result-image {
+            display: block;
+            margin: 30px auto; /* Increased margin */
+            max-width: 100%;
+            height: auto;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow); /* Add shadow to image too */
+        }
+        .flash-messages {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 30px;
+        }
+        /* More distinct flash message style */
+        .flash-messages li {
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: var(--border-radius);
+            background-color: #f8d7da; /* Light red background */
+            color: #721c24; /* Dark red text */
+            border: 1px solid #f5c6cb; /* Red border */
+            text-align: center;
+        }
+        .results-summary {
+            margin-top: 30px;
+            padding: 25px; /* Increased padding */
+            background-color: var(--secondary-color); /* Use light background */
+            border-radius: var(--border-radius);
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05); /* Inner shadow */
+            text-align: center; /* Center text */
+        }
+
+        .results-summary p {
+            margin: 10px 0; /* Increased spacing */
+            font-size: 1.1em; /* Slightly larger font */
+        }
+        .results-summary .count {
+            font-weight: 600; /* Bolder count */
+            font-size: 1.2em; /* Larger count number */
+            padding: 3px 8px; /* Add padding */
+            border-radius: 4px; /* Rounded corners for count */
+            color: white; /* White text for counts */
+        }
+        .results-summary .count.empty {
+            background-color: var(--success-color); /* Green background */
+        }
+        .results-summary .count.occupied {
+            background-color: var(--danger-color); /* Red background */
+        }
+
+        /* Loader Styles */
+        .loader-container { /* Renamed from loader-overlay */
+            display: none; /* Hidden by default */
+            justify-content: center; /* Center the spinner horizontally */
+            align-items: center;
+            margin-top: 20px; /* Space below the button */
+            width: 100%; /* Take full width of the form area */
+            height: 60px; /* Give it some fixed height */
+        }
+        .loader {
+            border: 6px solid var(--secondary-color); /* Slightly smaller border */
+            border-top: 6px solid var(--primary-color); /* Blue color for spinning part */
+            border-radius: 50%;
+            width: 40px; /* Smaller spinner */
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loader moved inside the form -->
+    <div class="container">
+        <h1>Parking Lot Space Detection</h1>
+
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <ul class=flash-messages>
+            {% for message in messages %}
+              <li>{{ message }}</li>
+            {% endfor %}
+            </ul>
+          {% endif %}
+        {% endwith %}
+
+        <form method=post enctype=multipart/form-data action="{{ url_for('upload_file') }}">
+            <p>
+                <label for="image" class="file-upload-label">Choose Parking Lot Image</label>
+                <input type=file name=image id=image accept="image/*" required onchange="document.getElementById('file-name').textContent = this.files[0] ? this.files[0].name : 'No file chosen';">
+                <span class="file-name" id="file-name">No file chosen</span>
+            </p>
+            <p>
+                <input type=submit value="Detect Spaces">
+            </p>
+            <!-- Loader Container -->
+            <div id="loader-container" class="loader-container"> 
+                <div class="loader"></div>
+            </div>
+        </form>
+
+        {% if processed_image %}
+            <h2>Result:</h2>
+            <img src="data:image/jpeg;base64,{{ processed_image }}" alt="Processed Image" class="result-image">
+
+            <div class="results-summary">
+                <h3>Detection Summary</h3>
+                <p>Empty Spaces: <span class="count empty">{{ empty_count if empty_count is defined else 'N/A' }}</span></p>
+                <p>Occupied Spaces: <span class="count occupied">{{ occupied_count if occupied_count is defined else 'N/A' }}</span></p>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Add script for file input name display and loader -->
+    <script>
+        // Display selected file name
+        const fileInput = document.getElementById('image');
+        const fileNameSpan = document.getElementById('file-name');
+        if (fileInput) {
+            fileInput.addEventListener('change', () => {
+                fileNameSpan.textContent = fileInput.files[0] ? fileInput.files[0].name : 'No file chosen';
+            });
+        }
+
+        // Show loader on form submit
+        const form = document.querySelector('form');
+        const loaderContainer = document.getElementById('loader-container'); // Renamed variable
+        if (form && loaderContainer) { // Check renamed variable
+            form.addEventListener('submit', () => {
+                // Basic check if file input is filled (browser checks 'required' anyway)
+                if(fileInput && fileInput.files.length > 0) {
+                     loaderContainer.style.display = 'flex'; // Show the inline loader
+                }
+            });
+        }
+    </script>
+</body>
+</html> 
